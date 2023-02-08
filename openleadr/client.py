@@ -800,7 +800,7 @@ class OpenADRClient:
         url = f"{self.vtn_url}/{service}"
         try:
             await self._execute_hooks('before_send_xml', utils.ensure_str(message))
-            async with self.client_session.post(url, data=message) as req:
+            async with self.client_session.post(url, data=message, ) as req:
                 content = await req.read()
                 await self._execute_hooks('after_receive_xml', utils.ensure_str(content))
                 if req.status != HTTPStatus.OK:
@@ -988,6 +988,7 @@ class OpenADRClient:
                 ssl_context.load_verify_locations(self.ca_file)
                 ssl_context.load_cert_chain(self.cert_path, self.key_path, self.passphrase)
                 ssl_context.check_hostname = self.check_hostname
+                ssl_context.verify_mode = ssl.CERT_NONE
                 connector = aiohttp.TCPConnector(ssl=ssl_context)
                 self.client_session = aiohttp.ClientSession(
                     connector=connector,
