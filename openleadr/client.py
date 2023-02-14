@@ -985,12 +985,11 @@ class OpenADRClient:
             client_timeout = aiohttp.ClientTimeout(sock_connect=5, sock_read=10)
             # if self.cert_path:
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-            # ssl.load_default_certs()
             ssl_context.load_verify_locations(self.ca_file)
             # ssl_context.load_cert_chain(self.cert_path, self.key_path, self.passphrase)
             ssl_context.check_hostname = self.check_hostname
             # ssl_context.verify_mode = ssl.CERT_NONE
-            connector = aiohttp.TCPConnector(ssl=False)
+            connector = aiohttp.TCPConnector(ssl=ssl_context)
             self.client_session = aiohttp.ClientSession(
                 connector=connector,
                 headers=headers,
