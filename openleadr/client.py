@@ -44,7 +44,7 @@ class OpenADRClient:
     """
     def __init__(self, ven_name, vtn_url, debug=False, cert=None, key=None,
                  passphrase=None, vtn_fingerprint=None, show_fingerprint=True, ca_file=None,
-                 allow_jitter=True, ven_id=None, disable_signature=False, check_hostname=True):
+                 allow_jitter=True, ven_id=None, disable_signature=False, check_hostname=True, ssl_validation=True):
         """
         Initializes a new OpenADR Client (Virtual End Node)
 
@@ -75,6 +75,7 @@ class OpenADRClient:
         self.vtn_fingerprint = vtn_fingerprint
         self.debug = debug
         self.check_hostname = check_hostname
+        self.ssl_validation = ssl_validation
 
         self.reports = []
         self.report_callbacks = {}              # Holds the callbacks for each specific report
@@ -983,20 +984,18 @@ class OpenADRClient:
         if not self.client_session:
             headers = {'content-type': 'application/xml'}
             client_timeout = aiohttp.ClientTimeout(sock_connect=5, sock_read=10)
-            # if self.cert_path:
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-            ssl_context.load_verify_locations(self.ca_file)
-            # ssl_context.load_cert_chain(self.cert_path, self.key_path, self.passphrase)
             ssl_context.check_hostname = self.check_hostname
-            ssl_context.verify_mode = ssl.CERT_NONE
+            if self.ca_file:
+                ssl_context.load_verify_locations(self.ca_file)
+            if self.cert_path:
+                ssl_context.load_cert_chain(self.cert_path, self.key_path, self.passphrase)
+            if self.ssl_validation:
+                ssl_context.verify_mode = ssl.CERT_NONE
+
             connector = aiohttp.TCPConnector(ssl=ssl_context)
             self.client_session = aiohttp.ClientSession(
                 connector=connector,
                 headers=headers,
                 timeout=client_timeout
             )
-            # else:
-            #     self.client_session = aiohttp.ClientSession(
-            #         headers=headers,
-            #         timeout=client_timeout
-            #     )
