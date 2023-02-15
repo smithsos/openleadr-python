@@ -990,7 +990,7 @@ class OpenADRClient:
                 ssl_context.load_verify_locations(self.ca_file)
             if self.cert_path:
                 ssl_context.load_cert_chain(self.cert_path, self.key_path, self.passphrase)
-            if self.ssl_validation:
+            if not self.ssl_validation:
                 ssl_context.verify_mode = ssl.CERT_NONE
 
             connector = aiohttp.TCPConnector(ssl=ssl_context)
